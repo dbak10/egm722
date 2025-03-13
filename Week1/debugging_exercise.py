@@ -9,7 +9,7 @@ guess = int(input())  # number needs to be an integer
 
 while guess != rand:  # if the guess is not equal to the random number, you have to guess again
     if guess > rand:  # if the guess is too high, tell the user.
-        print('Too low. Guess again.')
+        print('Too high. Guess again.')
     else:  # if the guess is too low, tell the user.
         print('Too high. Guess again.')
 
