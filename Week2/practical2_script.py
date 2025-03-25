@@ -5,7 +5,12 @@ from cartopy.feature import ShapelyFeature
 import cartopy.crs as ccrs
 import matplotlib.patches as mpatches
 import matplotlib.lines as mlines
+# this lets us use the figures interactively
 
+
+
+
+plt.ion() # make the plotting interactive
 
 def generate_handles(labels, colors, edge='k', alpha=1):
     """
@@ -40,7 +45,7 @@ def generate_handles(labels, colors, edge='k', alpha=1):
 
 # adapted this question: https://stackoverflow.com/q/32333870
 # answered by SO user Siyh: https://stackoverflow.com/a/35705477
-def scale_bar(ax, length=20, location=(0.92, 0.95)):
+def scale_bar(ax, length=10, location=(0.92, 0.95)):
     """
     Create a scale bar in a cartopy GeoAxes.
 
@@ -69,18 +74,18 @@ def scale_bar(ax, length=20, location=(0.92, 0.95)):
     ax.plot([sbx, sbx-length*1000], [sby, sby], color='k', linewidth=4, transform=ax.projection) # plot a thick black line
     ax.plot([sbx-(length/2)*1000, sbx-length*1000], [sby, sby], color='w', linewidth=2, transform=ax.projection) # plot a white line from 0 to halfway
 
-    ax.text(sbx, sby-(length/4)*1000, f"{length} km", ha='center', transform=ax.projection, fontsize=6) # add a label at the right side
-    ax.text(sbx-(length/2)*1000, sby-(length/4)*1000, f"{int(length/2)} km", ha='center', transform=ax.projection, fontsize=6) # add a label in the center
-    ax.text(sbx-length*1000, sby-(length/4)*1000, '0 km', ha='center', transform=ax.projection, fontsize=6) # add a label at the left side
+    ax.text(sbx, sby-(length/4)*1000, f"{length}km", ha='center', transform=ax.projection, fontsize=3) # add a label at the right side
+    ax.text(sbx-(length/2)*1000, sby-(length/4)*1000, "5km", ha='center', transform=ax.projection, fontsize=3) # add a label in the center
+    ax.text(sbx-(length-1)*1000, sby-(length/4)*1000,  "1km", ha='center', transform=ax.projection, fontsize=3) # add a label at the left side
 
     return ax
 
 # load the datasets
-outline = gpd.read_file(os.path.abspath('data_files/NI_outline.shp'))
-towns = gpd.read_file(os.path.abspath('data_files/Towns.shp'))
-water = gpd.read_file(os.path.abspath('data_files/Water.shp'))
-rivers = gpd.read_file(os.path.abspath('data_files/Rivers.shp'))
-counties = gpd.read_file(os.path.abspath('data_files/Counties.shp'))
+outline = gpd.read_file(os.path.abspath('Week2/data_files/NI_outline.shp'))
+towns = gpd.read_file(os.path.abspath('Week2/data_files/Towns.shp'))
+water = gpd.read_file(os.path.abspath('Week2/data_files/Water.shp'))
+rivers = gpd.read_file(os.path.abspath('Week2/data_files/Rivers.shp'))
+counties = gpd.read_file(os.path.abspath('Week2/data_files/Counties.shp'))
 
 ni_utm = ccrs.UTM(29)  # create a Universal Transverse Mercator reference system to transform our data.
 # NI is in UTM Zone 29, so we pass 29 to ccrs.UTM()
@@ -134,8 +139,11 @@ river_feat = ShapelyFeature(rivers['geometry'], # first argument is the geometry
                             linewidth=0.2) # set the linewidth to be 0.2 pt
 ax.add_feature(river_feat) # add the collection of features to the map
 
-# ShapelyFeature creates a polygon, so for point data we can just use ax.plot()
-town_handle = ax.plot(towns.geometry.x, towns.geometry.y, 's', color='0.5', ms=6, transform=ccrs.PlateCarree())
+# filter for towns and cities. ShapelyFeature creates a polygon, so for point data we can just use ax.plot.
+filtered_towns= towns[towns['STATUS'] == 'Town']
+city= towns[towns['STATUS'] == 'City']
+town_handle = ax.plot(filtered_towns.geometry.x, filtered_towns.geometry.y, 's', color='0.5', ms=6, transform=ccrs.PlateCarree())
+city_handle = ax.plot(city.geometry.x, city.geometry.y, 'o', color='0.9', ms=6, transform=ccrs.PlateCarree())
 
 # generate a list of handles for the county datasets
 # first, we add the list of names, then the list of colors, and finally we set the transparency
@@ -153,8 +161,8 @@ nice_names = [name.title() for name in county_names]
 
 # ax.legend() takes a list of handles and a list of labels corresponding to the objects 
 # you want to add to the legend
-handles = county_handles + water_handle + river_handle + town_handle # use '+' to concatenate (combine) lists
-labels = nice_names + ['Lakes', 'Rivers', 'Towns']
+handles = county_handles + water_handle + river_handle + town_handle + city_handle # use '+' to concatenate (combine) lists
+labels = nice_names + ['Lakes', 'Rivers', 'Towns', 'Cities']
 
 leg = ax.legend(handles, labels, title='Legend', title_fontsize=12, 
                  fontsize=10, loc='upper left', frameon=True, framealpha=1)
