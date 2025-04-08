@@ -1,3 +1,4 @@
+
 import numpy as np
 import rasterio as rio
 import geopandas as gpd
@@ -63,7 +64,7 @@ def img_display(img, ax, bands, stretch_args=None, **imshow_args):
     return handle, ax
 
 
-# ------------------------------------------------------------------------
+
 with rio.open('data_files/NI_Mosaic.tif') as dataset:
     img = dataset.read()
     xmin, ymin, xmax, ymax = dataset.bounds
@@ -121,3 +122,4 @@ ax.legend(county_handles + town_handle + city_handle,
           ['County Boundaries', 'Town', 'City'], fontsize=12, loc='upper left', framealpha=1)
 
 fig.savefig('imgs/example_map.png', dpi=300, bbox_inches='tight')
+
